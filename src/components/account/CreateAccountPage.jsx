@@ -1,12 +1,22 @@
 import { useState } from "react";
+import Axios from "axios";
 import { Notif } from "../../utils/Notif";
 import { formatNumber, trim } from "../../utils/Utils";
 
 export function CreateAccountPage(props) {
   const createRandomAccount = () => {
-    return Math.floor(1000000000 + Math.random() * 9000000000);
+    return uuidv4();
   };
-
+  const uuidv4 = () => {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+      /[xy]/g,
+      function (c) {
+        var r = (Math.random() * 16) | 0,
+          v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      }
+    );
+  };
   const [notif, setNotif] = useState({
     message: "Create a new client account.",
     style: "left",
@@ -15,15 +25,10 @@ export function CreateAccountPage(props) {
   const [initialAccountNumber, setInitialAccountNumber] = useState(
     createRandomAccount()
   );
-
-  const createNewAccount = (user) => {
-    const emptyInputs = Object.values(user).filter((input) => {
-      return input === "";
-    });
-
-    const localUsers = props.users;
-
-    const dob = new Date(user.dob);
+  const handleCreateAccount = async (event) => {
+    event.preventDefault();
+    const user = event.target.elements;
+    const dob = new Date(user.dob.value);
     const today = new Date();
     const ageDiff = today.getFullYear() - dob.getFullYear();
     if (ageDiff < 21) {
@@ -33,56 +38,37 @@ export function CreateAccountPage(props) {
       });
       return false;
     }
-
-    if (emptyInputs.length > 0) {
-      setNotif({ message: "All fields are required.", style: "danger" });
-      return false;
-    } else {
-      if (isNaN(user.netsalary) || user.netsalary <= 0) {
-        setNotif({ message: "Invalid monthly net salary.", style: "danger" });
-        return false;
-      }
-
-      setNotif("");
-
-      localUsers.unshift(user);
-      props.setUsers(localUsers);
-      localStorage.setItem("users", JSON.stringify(localUsers));
-
-      setInitialAccountNumber(createRandomAccount());
-      setInitialBalance(0);
-
-      setNotif({ message: "Successfully saved.", style: "success" });
-      return true;
-    }
-  };
-
-  const handleCreateAccount = (event) => {
-    event.preventDefault();
-    const user = event.target.elements;
-
     const account = {
-      fullname: user.fullname.value,
-      firstname: user.firstname.value,
-      dob: user.dob.value,
-      number: user.accountNumber.value,
-      bank: user.bank.value,
-      balance: trim(user.initialBalance.value),
-      netsalary: trim(user.netsalary.value),
-      transactions: [],
+      clientName: user.fullname.value,
+      clientLastName: user.firstname.value,
+      dateOfBirth: user.dob.value,
+      netSalaryPerMonth: trim(user.netsalary.value),
+      accountNumber: createRandomAccount(),
+      bankName: user.bank.value,
+      defaultSolde: initialBalance,
     };
-
-    const isSaved = createNewAccount(account);
-    if (isSaved) {
+    try {
+      const response = await Axios.post(
+        "http://127.0.0.1:8080/accounts/create",
+        account
+      );
+      setNotif({ message: "Successfully saved.", style: "success" });
       user.fullname.value = "";
       user.firstname.value = "";
       user.dob.value = "";
-      user.accountNumber.value = initialAccountNumber;
       user.initialBalance.value = formatNumber(initialBalance);
       user.netsalary.value = "";
+      props.setUsers([...props.users, response.data]);
+      localStorage.setItem(
+        "users",
+        JSON.stringify([...props.users, response.data])
+      );
+      setInitialAccountNumber(createRandomAccount());
+    } catch (error) {
+      console.error("Error while creating account:", error);
+      setNotif({ message: "Error while saving.", style: "danger" });
     }
   };
-
   const onInitialBalance = (event) => {
     const amount = trim(event.target.value) || 0;
     setInitialBalance(amount);
@@ -106,10 +92,9 @@ export function CreateAccountPage(props) {
           name="accountNumber"
           className="right"
           value={initialAccountNumber}
-          type="number"
+          type="text"
           disabled
         />
-
         <label htmlFor="balance">Initial balance</label>
         <input
           id="balance"
@@ -119,10 +104,8 @@ export function CreateAccountPage(props) {
           name="initialBalance"
           className="right"
         />
-
         <label htmlFor="netsalary">Monthly Net Salary</label>
         <input id="netsalary" type="text" name="netsalary" autoComplete="off" />
-
         <label htmlFor="bank">Bank</label>
         <select name="bank">
           <option value="BMOI">BMOI</option>
@@ -131,7 +114,6 @@ export function CreateAccountPage(props) {
           <option value="BOA">BOA</option>
         </select>
         <hr />
-
         <input value="Create Account" className="btn" type="submit" />
       </form>
     </section>
