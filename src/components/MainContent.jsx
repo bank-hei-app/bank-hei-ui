@@ -3,7 +3,7 @@ import Axios from "axios";
 import { Account } from "./account";
 
 export function MainContent(props) {
-  const { editingUser, setEditingUser, setEditModal } = props;
+  const { editingUser, setEditingUser, setEditModal, fetchAccountId } = props;
   const [bankAccounts, setBankAccounts] = useState([]);
 
   useEffect(() => {
@@ -15,6 +15,10 @@ export function MainContent(props) {
         console.error("Error when fetching data:", error);
       });
   }, []);
+
+  const handleAccountClick = (accountId) => {
+    fetchAccountId(accountId);
+  };
 
   return (
     <section id="main-content">
@@ -30,6 +34,7 @@ export function MainContent(props) {
           editingUser={editingUser}
           setEditingUser={setEditingUser}
           setEditModal={setEditModal}
+          onClick={() => handleAccountClick(account.id)}
         />
       ))}
     </section>
