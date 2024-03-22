@@ -1,9 +1,9 @@
 import "./App.css";
-import { Sidebar } from "./components/navbar";
+import { Home } from "./components";
 function App() {
   return (
     <>
-      <Sidebar />
+      <Home />
     </>
   );
 }
