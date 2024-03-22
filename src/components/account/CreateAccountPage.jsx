@@ -44,6 +44,7 @@ export function CreateAccountPage(props) {
       dateOfBirth: user.dob.value,
       netSalaryPerMonth: trim(user.netsalary.value),
       accountNumber: createRandomAccount(),
+      accountId: trim(user.accountId.value), // Ajout du champ accountId
       bankName: user.bank.value,
       defaultSolde: initialBalance,
     };
@@ -114,6 +115,9 @@ export function CreateAccountPage(props) {
           <option value="BOA">BOA</option>
         </select>
         <hr />
+        {/* Ajout du champ accountId */}
+        <label htmlFor="accountId">Account ID</label>
+        <input id="accountId" type="text" name="accountId" autoComplete="off" value={"5" + uuidv4().substring(1)} />
         <input value="Create Account" className="btn" type="submit" />
       </form>
     </section>
