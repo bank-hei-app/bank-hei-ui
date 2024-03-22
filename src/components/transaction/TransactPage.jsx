@@ -19,8 +19,8 @@ export function TransactPage(props) {
 
   const options = accounts.map((user) => {
     return (
-      <option key={user.number} value={user.number}>
-        {user.fullname} #{user.number}
+      <option key={user.accountNumber} value={user.accountNumber}>
+        {user.clientName} N:{user.accountNumber}
       </option>
     );
   });
@@ -30,7 +30,7 @@ export function TransactPage(props) {
     const selectedNumber = e.target.value;
 
     for (const user of accounts) {
-      if (user.number === selectedNumber) {
+      if (user.accountNumber === selectedNumber) {
         setSelectedAccount(user);
         break;
       }
@@ -48,10 +48,11 @@ export function TransactPage(props) {
     const accountNumber = e.target.elements.account.value;
 
     if (amount > 0 && accountNumber !== "0") {
-      const totalFunds = selectedAccount.balance; 
+      const totalFunds = selectedAccount.defaultSolde;
       const creditLimit = selectedAccount.credit || 0;
+      const overdraftEnabled = selectedAccount.overdraftEnabled || false;
 
-      if (totalFunds + creditLimit >= amount) {
+      if (totalFunds + creditLimit >= amount || overdraftEnabled) {
         transact(accountNumber, amount, props.type, props.setUsers);
         setSelectedAccount(findAccount(accountNumber));
         setAccounts(JSON.parse(localStorage.getItem("users")));
@@ -78,6 +79,8 @@ export function TransactPage(props) {
     setWithdrawalDateTime(e.target.value);
   };
 
+
+
   const icon =
     props.page === "withdraw" ? "bx bx-down-arrow-alt" : "bx bx-up-arrow-alt";
 
@@ -96,11 +99,11 @@ export function TransactPage(props) {
         <input
           type="text"
           className="right"
-          value={formatNumber(selectedAccount.balance)}
+          value={formatNumber(selectedAccount.defaultSolde !== undefined ? formatNumber(selectedAccount.defaultSolde) : '')}
           disabled
         />
 
-        <label>Withdrawal Date and Time</label> 
+        <label>Withdrawal Date and Time</label>
         <input
           type="datetime-local"
           name="withdrawalDateTime"
@@ -120,6 +123,8 @@ export function TransactPage(props) {
           autoComplete="off"
           className="right big-input"
         />
+
+        
         <button type="submit" className="btn">
           {props.page}
         </button>
