@@ -44,7 +44,7 @@ export function CreateAccountPage(props) {
       dateOfBirth: user.dob.value,
       netSalaryPerMonth: trim(user.netsalary.value),
       accountNumber: createRandomAccount(),
-      accountId: trim(user.accountId.value), // Ajout du champ accountId
+      accountId: trim(user.accountId.value), 
       bankName: user.bank.value,
       defaultSolde: initialBalance,
     };
