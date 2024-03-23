@@ -2,20 +2,16 @@ import { Logo } from "../Logo";
 import HomeIcon from "@mui/icons-material/Home";
 import AddCardIcon from "@mui/icons-material/AddCard";
 import TransferWithinAStationIcon from "@mui/icons-material/TransferWithinAStation";
-import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import CallReceivedIcon from '@mui/icons-material/CallReceived';
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import CallReceivedIcon from "@mui/icons-material/CallReceived";
 import { Icon } from "@mui/material";
 export function Sidebar(props) {
-  const {  changePage, page } = props;
+  const { changePage, page } = props;
 
   return (
     <section id="side-menu">
       <Logo />
-      <SideMenu
-        changePage={changePage}
-        page={page}
-        
-      />
+      <SideMenu changePage={changePage} page={page} />
     </section>
   );
 }
@@ -42,21 +38,21 @@ export function SideMenu(props) {
         onClickHandler={changePage}
         active={page}
         page="transfer"
-        icon={<TransferWithinAStationIcon/>}
+        icon={<TransferWithinAStationIcon />}
         text="Fund Transfer"
       />
       <SideLink
         onClickHandler={changePage}
         active={page}
         page="deposit"
-        icon={<AttachMoneyIcon/>}
+        icon={<AttachMoneyIcon />}
         text="Deposit"
       />
       <SideLink
         onClickHandler={changePage}
         active={page}
         page="withdraw"
-        icon={<CallReceivedIcon/>}
+        icon={<CallReceivedIcon />}
         text="Withdraw"
       />
     </ul>
