@@ -1,7 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Axios from "axios";
 import { Notif } from "../../utils/Notif";
-import { formatNumber, trim } from "../../utils/Utils";
 
 export function CreateAccountPage(props) {
   const createRandomAccount = () => {
@@ -17,10 +16,14 @@ export function CreateAccountPage(props) {
       }
     );
   };
+  const generateRandomId = () => {
+    return Math.floor(Math.random() * 81) + 20;
+  };
   const [notif, setNotif] = useState({
     message: "Create a new client account.",
     style: "left",
   });
+  const [accountId, setAccountId] = useState(generateRandomId());
   const [initialBalance, setInitialBalance] = useState(0);
   const [initialAccountNumber, setInitialAccountNumber] = useState(
     createRandomAccount()
@@ -39,12 +42,12 @@ export function CreateAccountPage(props) {
       return false;
     }
     const account = {
-      clientName: user.fullname.value,
+      clientName: user.name.value,
       clientLastName: user.firstname.value,
       dateOfBirth: user.dob.value,
-      netSalaryPerMonth: trim(user.netsalary.value),
+      netSalaryPerMonth: user.netsalary.value,
       accountNumber: createRandomAccount(),
-      accountId: trim(user.accountId.value), 
+      accountId: user.accountId.value,
       bankName: user.bank.value,
       defaultSolde: initialBalance,
     };
@@ -54,10 +57,10 @@ export function CreateAccountPage(props) {
         account
       );
       setNotif({ message: "Successfully saved.", style: "success" });
-      user.fullname.value = "";
+      user.name.value = "";
       user.firstname.value = "";
       user.dob.value = "";
-      user.initialBalance.value = formatNumber(initialBalance);
+      user.initialBalance.value = initialBalance;
       user.netsalary.value = "";
       props.setUsers([...props.users, response.data]);
       localStorage.setItem(
@@ -71,7 +74,7 @@ export function CreateAccountPage(props) {
     }
   };
   const onInitialBalance = (event) => {
-    const amount = trim(event.target.value) || 0;
+    const amount = event.target.value || 0;
     setInitialBalance(amount);
   };
 
@@ -100,7 +103,7 @@ export function CreateAccountPage(props) {
         <input
           id="balance"
           type="text"
-          value={formatNumber(initialBalance)}
+          value={initialBalance}
           onChange={onInitialBalance}
           name="initialBalance"
           className="right"
@@ -115,9 +118,14 @@ export function CreateAccountPage(props) {
           <option value="BOA">BOA</option>
         </select>
         <hr />
-        {/* Ajout du champ accountId */}
         <label htmlFor="accountId">Account ID</label>
-        <input id="accountId" type="text" name="accountId" autoComplete="off" value={"5" + uuidv4().substring(1)} />
+        <input
+          id="accountId"
+          type="text"
+          name="accountId"
+          autoComplete="off"
+          value={accountId}
+        />
         <input value="Create Account" className="btn" type="submit" />
       </form>
     </section>
