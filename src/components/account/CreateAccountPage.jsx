@@ -114,7 +114,7 @@ export function CreateAccountPage(props) {
         <select name="bank">
           <option value="BMOI">BMOI</option>
           <option value="BNI">BNI</option>
-          <option value="y-bank">y-bank</option>
+          <option value="bankeo">BANKEO</option>
           <option value="BOA">BOA</option>
         </select>
         <hr />
