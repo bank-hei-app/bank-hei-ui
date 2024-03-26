@@ -11,11 +11,12 @@ export function TransactPage(props) {
   const [selectedAccountId, setSelectedAccountId] = useState("");
   const [dateOfTransaction, setDateOfTransaction] = useState("");
   const [amount, setAmount] = useState(0);
-  const [balanceTypeId, setBalanceTypeId] = useState(0);
-  const [balanceCategoryId, setBalanceCategoryId] = useState(0);
+  const [balanceCategoryId, setBalanceCategoryId] = useState("");
+  const [balanceCategories, setBalanceCategories] = useState([]);
 
   useEffect(() => {
     fetchAccounts();
+    fetchBalanceCategories();
   }, []);
 
   const fetchAccounts = async () => {
@@ -24,6 +25,17 @@ export function TransactPage(props) {
       setAccounts(response.data);
     } catch (error) {
       console.error("Error while fetching accounts:", error);
+    }
+  };
+
+  const fetchBalanceCategories = async () => {
+    try {
+      const response = await Axios.get(
+        "http://127.0.0.1:8080/balance-categories"
+      );
+      setBalanceCategories(response.data);
+    } catch (error) {
+      console.error("Error while fetching balance categories:", error);
     }
   };
 
@@ -51,8 +63,7 @@ export function TransactPage(props) {
       setSelectedAccountId("");
       setDateOfTransaction("");
       setAmount(0);
-      setBalanceTypeId(0);
-      setBalanceCategoryId(0);
+      
     } catch (error) {
       console.error("Error while creating transaction:", error);
       setNotif({
@@ -65,7 +76,7 @@ export function TransactPage(props) {
   return (
     <section id="main-content">
       <form id="form" onSubmit={handleCreateTransaction}>
-        <h1>Create Transaction</h1>
+        <h1>WITHDRAW</h1>
         <Notif message={notif.message} style={notif.style} />
 
         <label htmlFor="accountId">Select Account</label>
@@ -101,18 +112,25 @@ export function TransactPage(props) {
           onChange={(event) => setAmount(parseFloat(event.target.value))}
         />
 
-        <label htmlFor="balanceCategoryId">Balance Category ID</label>
-        <input
+        <label htmlFor="balanceCategoryId">Balance Category</label>
+        <select
           id="balanceCategoryId"
-          type="number"
           name="balanceCategoryId"
           value={balanceCategoryId}
-          onChange={(event) =>
-            setBalanceCategoryId(parseInt(event.target.value))
-          }
-        />
+          onChange={(event) => setBalanceCategoryId(event.target.value)}
+        >
+          <option value="">Select a balance category...</option>
+          {balanceCategories.map((category) => (
+            <option
+              key={category.balanceCategoryId}
+              value={category.balanceCategoryId}
+            >
+              {category.balanceCategoryName}
+            </option>
+          ))}
+        </select>
 
-        <input value="Create Transaction" className="btn" type="submit" />
+        <input value="WITHDRAW" className="btn" type="submit" />
       </form>
     </section>
   );
