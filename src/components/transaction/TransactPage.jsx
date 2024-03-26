@@ -1,133 +1,118 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Axios from "axios";
 import { Notif } from "../../utils/Notif";
-import {
-  formatNumber,
-  findAccount,
-  transact,
-  trim,
-  capitalize,
-} from "../../utils/Utils";
 
 export function TransactPage(props) {
-  const users = JSON.parse(localStorage.getItem("users"));
-  const setNotif = props.setNotif;
-  const notif = props.notif;
-  const [accounts, setAccounts] = useState(users);
-  const [selectedAccount, setSelectedAccount] = useState({ balance: 0 });
-  const [depositAmount, setDepositAmount] = useState(0);
-  const [withdrawalDateTime, setWithdrawalDateTime] = useState("");
-
-  const options = accounts.map((user) => {
-    return (
-      <option key={user.accountNumber} value={user.accountNumber}>
-        {user.clientName} N:{user.accountNumber}
-      </option>
-    );
+  const [notif, setNotif] = useState({
+    message: "Create a new transaction.",
+    style: "left",
   });
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccountId, setSelectedAccountId] = useState("");
+  const [dateOfTransaction, setDateOfTransaction] = useState("");
+  const [amount, setAmount] = useState(0);
+  const [balanceTypeId, setBalanceTypeId] = useState(0);
+  const [balanceCategoryId, setBalanceCategoryId] = useState(0);
 
-  const displayBalance = (e) => {
-    setNotif(notif);
-    const selectedNumber = e.target.value;
+  useEffect(() => {
+    fetchAccounts();
+  }, []);
 
-    for (const user of accounts) {
-      if (user.accountNumber === selectedNumber) {
-        setSelectedAccount(user);
-        break;
-      }
+  const fetchAccounts = async () => {
+    try {
+      const response = await Axios.get("http://127.0.0.1:8080/accounts");
+      setAccounts(response.data);
+    } catch (error) {
+      console.error("Error while fetching accounts:", error);
     }
   };
 
-  const onDeposit = (e) => {
-    const amount = formatNumber(trim(e.target.value));
-    setDepositAmount(amount);
-  };
+  const handleCreateTransaction = async (event) => {
+    event.preventDefault();
+    const transaction = {
+      transactionId: Math.floor(Math.random() * 100) + 1,
+      accountId: selectedAccountId,
+      dateOfTransaction: dateOfTransaction,
+      amount: amount,
+      balanceTypeId: 1,
+      balanceCategoryId: balanceCategoryId,
+    };
 
-  const processTransfer = (e) => {
-    e.preventDefault();
-    const amount = trim(e.target.elements.amount.value);
-    const accountNumber = e.target.elements.account.value;
-
-    if (amount > 0 && accountNumber !== "0") {
-      const totalFunds = selectedAccount.defaultSolde;
-      const creditLimit = selectedAccount.credit || 0;
-      const overdraftEnabled = selectedAccount.overdraftEnabled || false;
-
-      if (totalFunds + creditLimit >= amount || overdraftEnabled) {
-        transact(accountNumber, amount, props.type, props.setUsers);
-        setSelectedAccount(findAccount(accountNumber));
-        setAccounts(JSON.parse(localStorage.getItem("users")));
-        setDepositAmount(0);
-        setNotif({
-          message: `${capitalize(props.page)} successful.`,
-          style: "success",
-        });
-      } else {
-        setNotif({
-          message: `Insufficient funds.`,
-          style: "danger",
-        });
-      }
-    } else {
+    try {
+      const response = await Axios.post(
+        "http://127.0.0.1:8080/transaction/addTransaction",
+        transaction
+      );
       setNotif({
-        message: `${capitalize(props.page)} failed.`,
+        message: "Transaction created successfully.",
+        style: "success",
+      });
+
+      setSelectedAccountId("");
+      setDateOfTransaction("");
+      setAmount(0);
+      setBalanceTypeId(0);
+      setBalanceCategoryId(0);
+    } catch (error) {
+      console.error("Error while creating transaction:", error);
+      setNotif({
+        message: "Error while creating transaction.",
         style: "danger",
       });
     }
   };
 
-  const handleChangeDateTime = (e) => {
-    setWithdrawalDateTime(e.target.value);
-  };
-
-
-
-  const icon =
-    props.page === "withdraw" ? "bx bx-down-arrow-alt" : "bx bx-up-arrow-alt";
-
   return (
     <section id="main-content">
-      <form id="form" onSubmit={processTransfer}>
-        <h1>{props.page}</h1>
+      <form id="form" onSubmit={handleCreateTransaction}>
+        <h1>Create Transaction</h1>
         <Notif message={notif.message} style={notif.style} />
-        <label>Account</label>
-        <select name="account" onChange={displayBalance}>
-          <option value="0">Select Account</option>
-          {options}
+
+        <label htmlFor="accountId">Select Account</label>
+        <select
+          id="accountId"
+          name="accountId"
+          value={selectedAccountId}
+          onChange={(event) => setSelectedAccountId(event.target.value)}
+        >
+          <option value="">Select an account...</option>
+          {accounts.map((account) => (
+            <option key={account.accountId} value={account.accountId}>
+              {account.accountId} - {account.clientName}
+            </option>
+          ))}
         </select>
 
-        <label>Current balance</label>
+        <label htmlFor="dateOfTransaction">Date of Transaction</label>
         <input
-          type="text"
-          className="right"
-          value={formatNumber(selectedAccount.defaultSolde !== undefined ? formatNumber(selectedAccount.defaultSolde) : '')}
-          disabled
+          id="dateOfTransaction"
+          type="date"
+          name="dateOfTransaction"
+          value={dateOfTransaction}
+          onChange={(event) => setDateOfTransaction(event.target.value)}
         />
 
-        <label>Withdrawal Date and Time</label>
+        <label htmlFor="amount">Amount</label>
         <input
-          type="datetime-local"
-          name="withdrawalDateTime"
-          value={withdrawalDateTime}
-          onChange={handleChangeDateTime}
-        />
-
-        <div className="transfer-icon">
-          <i className={icon}></i>
-        </div>
-        <label>Amount to {props.page}</label>
-        <input
-          type="text"
+          id="amount"
+          type="number"
           name="amount"
-          value={depositAmount}
-          onChange={onDeposit}
-          autoComplete="off"
-          className="right big-input"
+          value={amount}
+          onChange={(event) => setAmount(parseFloat(event.target.value))}
         />
 
-        
-        <button type="submit" className="btn">
-          {props.page}
-        </button>
+        <label htmlFor="balanceCategoryId">Balance Category ID</label>
+        <input
+          id="balanceCategoryId"
+          type="number"
+          name="balanceCategoryId"
+          value={balanceCategoryId}
+          onChange={(event) =>
+            setBalanceCategoryId(parseInt(event.target.value))
+          }
+        />
+
+        <input value="Create Transaction" className="btn" type="submit" />
       </form>
     </section>
   );
