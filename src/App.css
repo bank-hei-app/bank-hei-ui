@@ -441,3 +441,46 @@ input:disabled {
 .title {
   text-transform: capitalize;
 }
+.card {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: white;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  padding: 1rem;
+  background-color: var(--secondary-color);
+  color: white;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th,
+.td {
+  padding: .8rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(59, 49, 40, .2);
+}
+
+.th {
+  font-weight: normal;
+}
+
+.tbody .tr:nth-child(even) {
+  background-color: rgba(238, 238, 238, .5);
+}
+
+.tbody .tr:nth-child(odd) {
+  /* Définissez votre style pour les lignes impaires ici si nécessaire */
+}

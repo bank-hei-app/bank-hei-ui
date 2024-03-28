@@ -13,10 +13,13 @@ export function TransactPage(props) {
   const [amount, setAmount] = useState(0);
   const [balanceCategoryId, setBalanceCategoryId] = useState("");
   const [balanceCategories, setBalanceCategories] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     fetchAccounts();
     fetchBalanceCategories();
+    fetchTransactions();
   }, []);
 
   const fetchAccounts = async () => {
@@ -36,6 +39,15 @@ export function TransactPage(props) {
       setBalanceCategories(response.data);
     } catch (error) {
       console.error("Error while fetching balance categories:", error);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await Axios.get("http://127.0.0.1:8080/transaction");
+      setTransactions(response.data);
+    } catch (error) {
+      console.error("Error while fetching transactions:", error);
     }
   };
 
@@ -63,7 +75,8 @@ export function TransactPage(props) {
       setSelectedAccountId("");
       setDateOfTransaction("");
       setAmount(0);
-      
+      fetchTransactions(); 
+      setShowForm(false); 
     } catch (error) {
       console.error("Error while creating transaction:", error);
       setNotif({
@@ -75,63 +88,98 @@ export function TransactPage(props) {
 
   return (
     <section id="main-content">
-      <form id="form" onSubmit={handleCreateTransaction}>
-        <h1>WITHDRAW</h1>
-        <Notif message={notif.message} style={notif.style} />
+      <button onClick={() => setShowForm(true)} className="btn" id="withdraw">
+        WITHDRAW
+      </button>
+      {showForm ? (
+        <div>
+          <button onClick={() => setShowForm(false)}>Cancel</button>
+          <form id="form" onSubmit={handleCreateTransaction}>
+            <h1>WITHDRAW</h1>
+            <Notif message={notif.message} style={notif.style} />
 
-        <label htmlFor="accountId">Select Account</label>
-        <select
-          id="accountId"
-          name="accountId"
-          value={selectedAccountId}
-          onChange={(event) => setSelectedAccountId(event.target.value)}
-        >
-          <option value="">Select an account...</option>
-          {accounts.map((account) => (
-            <option key={account.accountId} value={account.accountId}>
-              {account.accountId} - {account.clientName}
-            </option>
-          ))}
-        </select>
-
-        <label htmlFor="dateOfTransaction">Date of Transaction</label>
-        <input
-          id="dateOfTransaction"
-          type="date"
-          name="dateOfTransaction"
-          value={dateOfTransaction}
-          onChange={(event) => setDateOfTransaction(event.target.value)}
-        />
-
-        <label htmlFor="amount">Amount</label>
-        <input
-          id="amount"
-          type="number"
-          name="amount"
-          value={amount}
-          onChange={(event) => setAmount(parseFloat(event.target.value))}
-        />
-
-        <label htmlFor="balanceCategoryId">Balance Category</label>
-        <select
-          id="balanceCategoryId"
-          name="balanceCategoryId"
-          value={balanceCategoryId}
-          onChange={(event) => setBalanceCategoryId(event.target.value)}
-        >
-          <option value="">Select a balance category...</option>
-          {balanceCategories.map((category) => (
-            <option
-              key={category.balanceCategoryId}
-              value={category.balanceCategoryId}
+            <label htmlFor="accountId">Select Account</label>
+            <select
+              id="accountId"
+              name="accountId"
+              value={selectedAccountId}
+              onChange={(event) => setSelectedAccountId(event.target.value)}
             >
-              {category.balanceCategoryName}
-            </option>
-          ))}
-        </select>
+              <option value="">Select an account...</option>
+              {accounts.map((account) => (
+                <option key={account.accountId} value={account.accountId}>
+                  {account.accountId} - {account.clientName}
+                </option>
+              ))}
+            </select>
 
-        <input value="WITHDRAW" className="btn" type="submit" />
-      </form>
+            <label htmlFor="dateOfTransaction">Date of Transaction</label>
+            <input
+              id="dateOfTransaction"
+              type="date"
+              name="dateOfTransaction"
+              value={dateOfTransaction}
+              onChange={(event) => setDateOfTransaction(event.target.value)}
+            />
+
+            <label htmlFor="amount">Amount</label>
+            <input
+              id="amount"
+              type="number"
+              name="amount"
+              value={amount}
+              onChange={(event) => setAmount(parseFloat(event.target.value))}
+            />
+
+            <label htmlFor="balanceCategoryId">Balance Category</label>
+            <select
+              id="balanceCategoryId"
+              name="balanceCategoryId"
+              value={balanceCategoryId}
+              onChange={(event) => setBalanceCategoryId(event.target.value)}
+            >
+              <option value="">Select a balance category...</option>
+              {balanceCategories.map((category) => (
+                <option
+                  key={category.balanceCategoryId}
+                  value={category.balanceCategoryId}
+                >
+                  {category.balanceCategoryName}
+                </option>
+              ))}
+            </select>
+
+            <input value="WITHDRAW" className="btn" type="submit" />
+          </form>
+        </div>
+      ) : (
+        <div>
+          <h2>All Transactions</h2>
+          <table className="table">
+            <thead>
+              <tr>
+                <th className="th">Transaction ID</th>
+                <th className="th">Account ID</th>
+                <th className="th">Date</th>
+                <th className="th">Amount</th>
+                <th className="th">Balance Category</th>
+              </tr>
+            </thead>
+            <tbody className="tbody">
+              {transactions.map((transaction) => (
+                <tr key={transaction.transactionId} className="tr">
+                  <td>{transaction.transactionId}</td>
+                  <td>{transaction.accountId}</td>
+                  <td>{transaction.dateOfTransaction}</td>
+                  <td>{transaction.amount}</td>
+                  <td>{transaction.balanceCategoryId}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+        </div>
+      )}
     </section>
   );
 }
